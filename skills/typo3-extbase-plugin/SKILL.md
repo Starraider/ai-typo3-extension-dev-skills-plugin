@@ -1,11 +1,23 @@
 ---
 name: typo3-extbase-plugin
-description: Build TYPO3 v13+/v14+ Extbase frontend plugins from scratch — covers all layers from ext_localconf.php plugin registration through Domain Models, Repositories, Controllers, TCA configuration, TypoScript setup, ext_tables.sql, and Services.yaml dependency injection. Use this skill when creating a new Extbase plugin, adding a new controller or action, creating a new domain model with properties (including sys_category relations, fe_users ownership, Country fields, ObjectStorage relations, FileReference images), configuring TCA for custom tables, registering plugins in tt_content, or troubleshooting Extbase persistence mapping issues. Also use when adding CRUD operations (list, show, new, create, edit, update, delete) to a controller or integrating frontend user access control.
+description: Build and extend TYPO3 v13+/v14+ Extbase frontend plugins across database schema, domain models, repositories, controllers, TCA, TypoScript, Fluid templates, dependency injection, and plugin registration. Use when creating an Extbase plugin or adding models, relations, CRUD actions, frontend-user ownership, or persistence mappings. Do not use for standalone FlexForms, Scheduler tasks, or record localization; use the corresponding focused skill.
+license: CC-BY-4.0
+compatibility: Requires a TYPO3 v13 or v14 extension codebase and its normal PHP/TYPO3 tooling; database and cache commands require an authorized project environment.
 ---
 
 # TYPO3 Extbase Plugin
 
 Complete workflow for building Extbase frontend plugins in a TYPO3 v13+/v14+ site package.
+
+## Outcome
+
+Produce a consistent, wired Extbase feature whose schema, persistence model, controller actions, backend registration, dependency injection, TypoScript, and Fluid templates agree. Keep standalone FlexForm authoring, Scheduler tasks, and localization architecture in their focused skills; link to those skills when the request crosses a boundary.
+
+## Establish the Contract
+
+Before editing, inspect the existing extension structure and resolve the extension key, vendor namespace, table/model names, plugin name, actions, storage PID, authorization rules, TYPO3 version, and whether the change is greenfield or a migration.
+
+Completion: the affected files, cacheability, ownership/authorization behavior, and required database or TCA changes are explicit. Ask only for ambiguity that would change the implementation.
 
 ## Quick Reference — File Touchpoints
 
@@ -26,6 +38,8 @@ Every Extbase plugin touches these files. Work through them **in this order** to
 | 11 | `Resources/Private/Templates/<Controller>/<Action>.html` | Fluid templates |
 
 ## Workflow
+
+Apply the following order to new features. For a focused change, start at the earliest affected touchpoint and check downstream consumers before finishing.
 
 ### 1. Database Schema (`ext_tables.sql`)
 
@@ -196,6 +210,12 @@ Template path convention: `Resources/Private/Templates/<ControllerName>/<ActionN
 
 Example for `list` action: `Resources/Private/Templates/Example/List.html`
 
+## Verification
+
+Check that every configured action has a matching controller method and template, every controller is discoverable through `Services.yaml`, the database columns match model properties and relations, plugin registration uses the intended cacheability, and persistence mappings cover non-standard tables. Run the project's PHP, TYPO3 schema, cache, and functional checks when available; otherwise report which checks could not run.
+
+Completion: the feature is internally wired, no required file or mapping is missing, and verification results or limitations are recorded.
+
 ## Common Pitfalls
 
 | Pitfall | Symptom | Fix |
@@ -206,3 +226,16 @@ Example for `list` action: `Resources/Private/Templates/Example/List.html`
 | ObjectStorage not initialized | "Call to member function on null" | Initialize in `__construct()` + `initializeObject()` |
 | DB column missing for relation | Count always 0 | Add `int(11) unsigned DEFAULT '0'` column in ext_tables.sql |
 | `configurePlugin` vs `registerPlugin` confused | Plugin not insertable in backend | `configurePlugin` = ext_localconf.php; `registerPlugin` = TCA/Overrides |
+
+## Safety
+
+- Work only in the user-authorized TYPO3 source extension; do not edit an installed cache or generated package.
+- Treat `ext_tables.sql`, TCA, PHP, TypoScript, and Fluid edits as project changes. Do not deploy, publish, or contact external services unless explicitly requested.
+- Schema updates, cache flushes, and frontend/backend verification can mutate a database or cache. Run them only in the intended environment and with authorization; prefer a reversible or disposable environment for destructive tests.
+- For frontend CRUD, enforce ownership and authorization before update/delete operations. Never infer access from a submitted UID alone.
+
+## Resources
+
+- [Controller patterns](references/controller-patterns.md) for actions, CRUD, frontend-user access, forms, and responses.
+- [Domain model patterns](references/domain-model-patterns.md) for properties, relations, ObjectStorage, and core-table shims.
+- [TCA patterns](references/tca-patterns.md) for field configuration and relation types.

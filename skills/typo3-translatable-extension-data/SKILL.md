@@ -1,6 +1,8 @@
 ---
 name: typo3-translatable-extension-data
-description: Make TYPO3 v13+/v14+ extension records translatable and ensure Extbase or frontend plugin code returns localized records for the active site language. Use when a custom table in an extension needs TYPO3 localization support, when selected record fields must be translatable or language-synchronized, when TCA and SQL translation columns must be added, or when repositories and controllers still return default-language records instead of overlays. Apply whenever certain records of an extension need to be translatable or when controllers must provide translated records. Do not use this skill for Fluid template or XLF label translation.
+description: Make TYPO3 v13+/v14+ extension records translatable and keep Extbase/frontend queries language-aware. Use when custom tables need localization columns, TCA language wiring, synchronization behavior, translated repository results, or controller fixes for default-language leakage. Do not use for Fluid/XLF label translation, standalone FlexForms, Scheduler tasks, or unrelated frontend localization.
+license: CC-BY-4.0
+compatibility: Requires a TYPO3 v13 or v14 extension with custom database tables, TCA, and an authorized environment for schema and multilingual frontend verification.
 ---
 
 # TYPO3 Translatable Extension Data
@@ -8,6 +10,16 @@ description: Make TYPO3 v13+/v14+ extension records translatable and ensure Extb
 ## Overview
 
 Configure custom extension tables so TYPO3 can localize records with the standard language columns and overlay behavior. Keep the scope on record data, TCA, SQL schema, repositories, and controllers; do not handle translating Fluid templates or labels in this skill.
+
+## Outcome
+
+Produce a complete localization contract for the affected table: SQL columns, TCA `ctrl` and field configuration, deliberate synchronization behavior, language-aware repository queries, and a controller that passes localized entities to the view.
+
+## Establish the Contract
+
+Before editing, identify the table, business fields that vary by language, fields that may synchronize, related child tables, storage-page behavior, fallback expectations, and the active frontend language. Inspect existing TCA, SQL, repository, and controller code for legacy or manual language logic.
+
+Completion: the source table, translated fields, synchronization policy, fallback behavior, and verification language are explicit.
 
 ## Workflow
 
@@ -17,6 +29,10 @@ Configure custom extension tables so TYPO3 can localize records with the standar
 4. Add `allowLanguageSynchronization` only to fields editors may intentionally keep in sync with the source record.
 5. Keep repository queries language-aware so controllers receive localized entities.
 6. Verify the translated page or plugin output in a non-default language.
+
+For a focused change, start at the earliest affected layer and inspect all downstream layers before finishing. Keep the standard TYPO3 overlay behavior as the default; introduce custom fallback logic only when the project requirement demands it.
+
+Completion: SQL, TCA, repository behavior, controller assignment, and frontend language output agree, or each unverified runtime check is reported.
 
 ## Add The Required Database Fields
 
@@ -160,6 +176,13 @@ After implementation:
 3. Check that the plugin page in the target language renders translated field values.
 4. Check that synchronized fields still follow the source record when editors choose synchronization.
 5. Check that untranslated relations or custom queries do not leak default-language records unexpectedly.
+
+## Safety
+
+- Edit only the authorized extension source and preserve existing localization columns and stored records during migrations.
+- Database schema updates and creation/editing of translated records change project data; run them only in the intended environment with authorization and a recoverable backup or fixture.
+- Do not silently translate Fluid templates or XLF labels; hand those requests to the appropriate documentation/localization workflow.
+- Do not hardcode credentials, site-specific secrets, or irreversible data transformations into examples.
 
 ## References
 
